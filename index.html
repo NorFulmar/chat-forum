@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时聊天论坛</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 登录界面 -->
+        <div id="loginPage" class="page active">
+            <div class="login-container">
+                <h1>✨ 欢迎来到论坛 ✨</h1>
+                <input type="text" id="usernameInput" placeholder="请输入你的用户名" onkeypress="if(event.key==='Enter')login()">
+                <button onclick="login()" class="login-btn">进入论坛</button>
+            </div>
+        </div>
+
+        <!-- 主界面 -->
+        <div id="mainPage" class="page">
+            <div class="main-layout">
+                <!-- 侧边栏 -->
+                <aside class="sidebar">
+                    <div class="user-profile">
+                        <div class="user-info">
+                            <h3 id="usernameSidebar">用户名</h3>
+                            <p id="userLevelSidebar">等级: 1</p>
+                            <p id="userTitleSidebar">称号: 先行者</p>
+                            <p id="userExpSidebar">经验: 0/100</p>
+                        </div>
+                        <button class="profile-btn" onclick="openUserCenter()">👤 个人中心</button>
+                    </div>
+
+                    <nav class="channels">
+                        <h4>频道</h4>
+                        <button class="channel-btn active" data-channel="main" onclick="switchChannel('main')">主区</button>
+                        <button class="channel-btn" data-channel="chat" onclick="switchChannel('chat')">聊天区</button>
+                        <button class="channel-btn" data-channel="spam" onclick="switchChannel('spam')">刷屏区</button>
+                    </nav>
+
+                    <div class="friends-section">
+                        <h4>好友列表</h4>
+                        <div id="friendsList" class="friends-list"></div>
+                        <p class="friends-empty">暂无好友</p>
+                    </div>
+
+                    <div class="actions">
+                        <button onclick="openMall()" class="action-btn">🏵 商城</button>
+                        <button onclick="toggleLurkMode()" class="action-btn" id="lurkBtn">🌊 潜水</button>
+                        <button onclick="logout()" class="action-btn logout-btn">🚪 退出</button>
+                    </div>
+                </aside>
+
+                <!-- 主聊天区域 -->
+                <div class="main-content">
+                    <header class="channel-header">
+                        <h2 id="channelTitle">主区</h2>
+                        <span id="lurkStatus" class="lurk-status" style="display:none;">🌊 潜水中</span>
+                    </header>
+
+                    <div id="chatContainer" class="chat-container">
+                        <!-- 聊天消息显示区域 -->
+                    </div>
+
+                    <footer class="chat-input-area" id="inputArea">
+                        <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
+                        <button onclick="sendMessage()" class="send-btn">发送</button>
+                    </footer>
+                </div>
+
+                <!-- 私聊面板 -->
+                <div id="dmPanel" class="dm-panel">
+                    <div class="dm-header">
+                        <h3 id="dmUserName">用户名</h3>
+                        <button onclick="closeDMPanel()" class="close-dm-btn">✕</button>
+                    </div>
+                    <div id="dmContainer" class="dm-container">
+                        <!-- 私聊消息 -->
+                    </div>
+                    <div class="dm-input-area">
+                        <button onclick="clearDMHistory()" class="clear-btn">🗑️ 清空记录</button>
+                        <input type="text" id="dmInput" placeholder="输入私聊消息..." onkeypress="handleDMKeyPress(event)">
+                        <button onclick="sendDMMessage()" class="send-btn">发送</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 个人中心 -->
+        <div id="userCenterPage" class="page">
+            <div class="user-center">
+                <button class="back-btn" onclick="backToMain()">← 返回</button>
+                <h2>👤 个人中心</h2>
+                <div class="center-content">
+                    <div class="user-stats">
+                        <h3 id="centerUsername">用户名</h3>
+                        <div class="stat-item">
+                            <span class="label">等级:</span>
+                            <span id="centerLevel" class="value">1</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">经验:</span>
+                            <span id="centerExp" class="value">0/100</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">称号:</span>
+                            <span id="centerTitle" class="value">先行者</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">血量:</span>
+                            <span id="centerBlood" class="value">20</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">留言数:</span>
+                            <span id="centerMessages" class="value">0</span>
+                        </div>
+                    </div>
+                    <div class="titles-section">
+                        <h4>📜 称号管理</h4>
+                        <div id="titlesList" class="titles-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 商城 -->
+        <div id="mallPage" class="page">
+            <div class="mall">
+                <button class="back-btn" onclick="backToMain()">← 返回</button>
+                <h2>🏵 商城</h2>
+                <div class="mall-info">
+                    <p>💰 金币: <span id="mallCoins">0</span></p>
+                    <p>🍃 叶子: <span id="mallLeaves">0</span></p>
+                </div>
+                <div id="mallContent" class="mall-content">
+                    <!-- 商城商品 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 战斗界面 -->
+        <div id="battlePage" class="page">
+            <div class="battle">
+                <button class="back-btn" onclick="exitBattle()">退出战斗</button>
+                <div class="battle-container">
+                    <div class="battle-player">
+                        <h3 id="battlePlayerName">玩家1</h3>
+                        <div class="hp-bar">
+                            <div id="playerHPBar" class="hp-fill"></div>
+                        </div>
+                        <p id="playerHPText">HP: 20/20</p>
+                        <p id="playerLevel">Lv.1</p>
+                    </div>
+
+                    <div class="battle-vs">VS</div>
+
+                    <div class="battle-enemy">
+                        <h3 id="battleEnemyName">敌人</h3>
+                        <div class="hp-bar">
+                            <div id="enemyHPBar" class="hp-fill"></div>
+                        </div>
+                        <p id="enemyHPText">HP: 20/20</p>
+                        <p id="enemyLevel">Lv.1</p>
+                    </div>
+                </div>
+
+                <div class="battle-log" id="battleLog">
+                    战斗开始！
+                </div>
+
+                <div class="battle-skills">
+                    <button class="skill-btn" onclick="useSkill(1)" id="skill1">技能1<br><span class="skill-level">Lv.1</span></button>
+                    <button class="skill-btn" onclick="useSkill(2)" id="skill2">技能2<br><span class="skill-level">Lv.1</span></button>
+                    <button class="skill-btn" onclick="useSkill(3)" id="skill3">技能3<br><span class="skill-level">Lv.1</span></button>
+                    <button class="skill-btn" onclick="useSkill(4)" id="skill4">技能4<br><span class="skill-level">Lv.1</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 举报对话框 -->
+        <div id="reportModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>举报用户</h3>
+                <input type="text" id="reportUsername" placeholder="输入要举报的用户名">
+                <div class="modal-buttons">
+                    <button onclick="submitReport()">确认举报</button>
+                    <button onclick="closeReportModal()">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
